@@ -3,6 +3,7 @@ package com.codeborne.iterjdbc;
 import com.codeborne.iterjdbc.jdbc.PreparedQuery;
 import com.codeborne.iterjdbc.jdbc.PreparedUpdate;
 
+import java.util.Iterator;
 import java.util.Map;
 
 public class JdbcOperations {
@@ -26,6 +27,10 @@ public class JdbcOperations {
 
   public int executeUpdate(String sql, Map<String, Object> params) {
     return factory.getQueries().executeUpdate(sql, params);
+  }
+
+  public int executeBatchUpdate(String sql, Iterator<Map<String, Object>> paramsIterator) {
+    return factory.getQueries().executeBatchUpdate(sql, paramsIterator);
   }
 
   public PreparedUpdate prepareUpdate(String sql) {

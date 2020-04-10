@@ -4,6 +4,8 @@ import com.codeborne.iterjdbc.named.NamedSql;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 
@@ -20,6 +22,19 @@ public class PreparedUpdate implements AutoCloseable {
     try {
       PreparedQueriesUtils.setParams(stmt, namedSql.toPositionalParams(params));
       return stmt.executeUpdate();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public int executeBatch(Iterator<Map<String, Object>> paramsIterator) {
+    try {
+      while (paramsIterator.hasNext()) {
+        var params = paramsIterator.next();
+        PreparedQueriesUtils.setParams(stmt, namedSql.toPositionalParams(params));
+        stmt.addBatch();
+      }
+      return Arrays.stream(stmt.executeBatch()).filter(i -> i >= 0).sum();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }

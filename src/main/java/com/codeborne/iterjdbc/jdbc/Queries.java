@@ -3,6 +3,7 @@ package com.codeborne.iterjdbc.jdbc;
 import com.codeborne.iterjdbc.CloseableIterator;
 import com.codeborne.iterjdbc.RowMapper;
 
+import java.util.Iterator;
 import java.util.Map;
 
 public class Queries {
@@ -36,6 +37,12 @@ public class Queries {
   public int executeUpdate(String sql, Map<String, Object> params) {
     try (var preparedUpdate = preparedQueries.prepareUpdate(sql)) {
       return preparedUpdate.execute(params);
+    }
+  }
+
+  public int executeBatchUpdate(String sql, Iterator<Map<String, Object>> paramsIterator) {
+    try (var preparedUpdate = preparedQueries.prepareUpdate(sql)) {
+      return preparedUpdate.executeBatch(paramsIterator);
     }
   }
 }

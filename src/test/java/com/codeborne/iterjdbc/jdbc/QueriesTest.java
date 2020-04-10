@@ -4,6 +4,7 @@ import com.codeborne.iterjdbc.CloseableListIterator;
 import com.codeborne.iterjdbc.RowMapper;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -87,6 +88,24 @@ class QueriesTest {
 
     verify(preparedQueries).prepareUpdate(sql);
     verify(preparedUpdate).execute(params);
+    verify(preparedUpdate).close();
+    assertThat(affectedRows).isEqualTo(12);
+  }
+
+  @Test
+  void executeBatchUpdate() {
+    var sql = "insert into A (B) values (:c)";
+    Map<String, Object> params = Map.of("c", "value of c");
+    var paramsIterator = List.of(params).iterator();
+
+    var preparedUpdate = mock(PreparedUpdate.class);
+    when(preparedUpdate.executeBatch(any())).thenReturn(12);
+    when(preparedQueries.prepareUpdate(any())).thenReturn(preparedUpdate);
+
+    int affectedRows = queries.executeBatchUpdate(sql, paramsIterator);
+
+    verify(preparedQueries).prepareUpdate(sql);
+    verify(preparedUpdate).executeBatch(paramsIterator);
     verify(preparedUpdate).close();
     assertThat(affectedRows).isEqualTo(12);
   }

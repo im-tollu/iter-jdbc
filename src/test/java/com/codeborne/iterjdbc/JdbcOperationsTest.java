@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,12 +35,11 @@ class JdbcOperationsTest {
     when(factory.getPreparedQueries()).thenReturn(preparedQueries);
     when(queries.executeQuery(any(), any(), any())).thenReturn(results);
     when(queries.executeUpdate(any(), any())).thenReturn(12);
+    when(queries.executeBatchUpdate(any(), any())).thenReturn(12);
     when(queries.executeQueryForSingleResult(any(), any(), any())).thenReturn("result");
     when(preparedQueries.prepareQuery(any(), ArgumentMatchers.<RowMapper<String>>any()))
       .thenReturn(preparedQuery);
     when(preparedQueries.prepareUpdate(any())).thenReturn(preparedUpdate);
-    when(preparedQuery.execute(any())).thenReturn(results);
-    when(preparedUpdate.execute(any())).thenReturn(12);
   }
 
   @Test
@@ -71,6 +71,15 @@ class JdbcOperationsTest {
     var affectedRows = jdbc.executeUpdate(sql, params);
 
     verify(queries).executeUpdate(sql, params);
+    assertThat(affectedRows).isEqualTo(12);
+  }
+
+  @Test
+  void executeBatchUpdate() {
+    var paramsIterator = List.of(params).iterator();
+    var affectedRows = jdbc.executeBatchUpdate(sql, paramsIterator);
+
+    verify(queries).executeBatchUpdate(sql, paramsIterator);
     assertThat(affectedRows).isEqualTo(12);
   }
 
