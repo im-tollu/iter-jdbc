@@ -21,6 +21,10 @@ public class JdbcOperations {
     return queries.executeQuery(sql, params, rowMapper);
   }
 
+  public <E> E executeQueryForSingleResult(String sql, Map<String, Object> params, RowMapper<E> rowMapper) {
+    return queries.executeQueryForSingleResult(sql, params, rowMapper);
+  }
+
   public <E> PreparedQuery<E> prepareQuery(String sql, RowMapper<E> rowMapper) {
     return preparedQueries.prepareQuery(sql, rowMapper);
   }

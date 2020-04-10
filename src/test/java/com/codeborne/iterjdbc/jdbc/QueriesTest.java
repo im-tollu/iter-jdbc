@@ -5,6 +5,7 @@ import com.codeborne.iterjdbc.RowMapper;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,6 +33,45 @@ class QueriesTest {
     verify(preparedQuery).execute(params);
     verify(preparedQuery).close();
     assertThat(results).isSameAs(resultsStub);
+  }
+
+  @Test @SuppressWarnings({"unchecked", "ConstantConditions"})
+  void executeQueryForSingleResult() {
+    var sql = "select A from B where C = :paramC";
+    Map<String, Object> params = Map.of("paramC", "value of c");
+    var isResultsClosed = new AtomicBoolean(false);
+
+    var resultsStub = new CloseableListIterator<>("result");
+    resultsStub.onClose(() -> isResultsClosed.set(true));
+    var preparedQuery = mock(PreparedQuery.class);
+    when(preparedQuery.execute(any())).thenReturn(resultsStub);
+    when(preparedQueries.prepareQuery(any(), any())).thenReturn(preparedQuery);
+
+    var result = queries.executeQueryForSingleResult(sql, params, rs -> "any String");
+
+    verify(preparedQuery).execute(params);
+    verify(preparedQuery).close();
+    assertThat(isResultsClosed).isTrue();
+    assertThat(result).isEqualTo("result");
+  }
+
+  @Test @SuppressWarnings({"unchecked", "ConstantConditions"})
+  void executeQueryForSingleResult_whenNoResults() {
+    var sql = "select A from B where C = :paramC";
+    Map<String, Object> params = Map.of("paramC", "value of c");
+    var isResultsClosed = new AtomicBoolean(false);
+
+    var resultsStub = new CloseableListIterator<String>();
+    resultsStub.onClose(() -> isResultsClosed.set(true));
+    var preparedQuery = mock(PreparedQuery.class);
+    when(preparedQuery.execute(any())).thenReturn(resultsStub);
+    when(preparedQueries.prepareQuery(any(), any())).thenReturn(preparedQuery);
+
+    var result = queries.executeQueryForSingleResult(sql, params, rs -> "any String");
+
+    verify(preparedQuery).close();
+    assertThat(isResultsClosed).isTrue();
+    assertThat(result).isNull();
   }
 
   @Test

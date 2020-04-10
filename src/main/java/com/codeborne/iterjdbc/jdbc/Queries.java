@@ -23,6 +23,16 @@ public class Queries {
     return results;
   }
 
+  public <E> E executeQueryForSingleResult(
+    String sql,
+    Map<String, Object> params,
+    RowMapper<E> rowMapper
+  ) {
+    try (var results = executeQuery(sql, params, rowMapper)) {
+      return results.hasNext() ? results.next() : null;
+    }
+  }
+
   public int executeUpdate(String sql, Map<String, Object> params) {
     try (var preparedUpdate = preparedQueries.prepareUpdate(sql)) {
       return preparedUpdate.execute(params);
