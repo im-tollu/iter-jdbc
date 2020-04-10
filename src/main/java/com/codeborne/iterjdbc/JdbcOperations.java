@@ -20,7 +20,7 @@ public class JdbcOperations {
     return queries.executeQuery(sql, params, rowMapper);
   }
 
-  public <E> PreparedQuery<E> preparedQuery(String sql, RowMapper<E> rowMapper) {
+  public <E> PreparedQuery<E> prepareQuery(String sql, RowMapper<E> rowMapper) {
     return preparedQueries.prepareQuery(sql, rowMapper);
   }
 }
