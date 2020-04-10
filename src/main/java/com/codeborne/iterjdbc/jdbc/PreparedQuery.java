@@ -7,6 +7,7 @@ import com.codeborne.iterjdbc.named.NamedSql;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Objects;
 
 public class PreparedQuery<E> implements AutoCloseable {
   private final PreparedStatement stmt;
@@ -39,5 +40,29 @@ public class PreparedQuery<E> implements AutoCloseable {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    PreparedQuery<?> that = (PreparedQuery<?>) o;
+    return stmt.equals(that.stmt) &&
+      namedSql.equals(that.namedSql) &&
+      rowMapper.equals(that.rowMapper);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(stmt, namedSql, rowMapper);
+  }
+
+  @Override
+  public String toString() {
+    return "PreparedQuery{" +
+      "stmt=" + stmt +
+      ", namedSql=" + namedSql +
+      ", rowMapper=" + rowMapper +
+      '}';
   }
 }
