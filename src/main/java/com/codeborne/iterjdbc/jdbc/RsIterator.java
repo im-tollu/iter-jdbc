@@ -7,6 +7,7 @@ import com.codeborne.iterjdbc.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 public class RsIterator<E> extends WithCloseHandlers implements CloseableIterator<E> {
   private final ResultSet rs;
@@ -57,7 +58,25 @@ public class RsIterator<E> extends WithCloseHandlers implements CloseableIterato
     }
   }
 
-  boolean hasSameResultSet(ResultSet thatRs) {
-    return this.rs == thatRs;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    RsIterator<?> that = (RsIterator<?>) o;
+    return rs.equals(that.rs) &&
+      rowMapper.equals(that.rowMapper);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(rs, rowMapper);
+  }
+
+  @Override
+  public String toString() {
+    return "RsIterator{" +
+      "rs=" + rs +
+      ", rowMapper=" + rowMapper +
+      '}';
   }
 }
