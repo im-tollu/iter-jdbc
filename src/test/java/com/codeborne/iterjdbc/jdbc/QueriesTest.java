@@ -33,4 +33,21 @@ class QueriesTest {
     verify(preparedQuery).close();
     assertThat(results).isSameAs(resultsStub);
   }
+
+  @Test
+  void executeUpdate() {
+    var sql = "insert into A (B) values (:c)";
+    Map<String, Object> params = Map.of("c", "value of c");
+
+    var preparedUpdate = mock(PreparedUpdate.class);
+    when(preparedUpdate.execute(any())).thenReturn(12);
+    when(preparedQueries.prepareUpdate(any())).thenReturn(preparedUpdate);
+
+    int affectedRows = queries.executeUpdate(sql, params);
+
+    verify(preparedQueries).prepareUpdate(sql);
+    verify(preparedUpdate).execute(params);
+    verify(preparedUpdate).close();
+    assertThat(affectedRows).isEqualTo(12);
+  }
 }

@@ -25,6 +25,10 @@ public class JdbcOperations {
     return preparedQueries.prepareQuery(sql, rowMapper);
   }
 
+  public int executeUpdate(String sql, Map<String, Object> params) {
+    return queries.executeUpdate(sql, params);
+  }
+
   public PreparedUpdate prepareUpdate(String sql) {
     return preparedQueries.prepareUpdate(sql);
   }

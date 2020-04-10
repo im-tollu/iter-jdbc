@@ -22,4 +22,10 @@ public class Queries {
     results.onClose(query::close);
     return results;
   }
+
+  public int executeUpdate(String sql, Map<String, Object> params) {
+    try (var preparedUpdate = preparedQueries.prepareUpdate(sql)) {
+      return preparedUpdate.execute(params);
+    }
+  }
 }
