@@ -23,7 +23,7 @@ public class Example {
     public void printUsers(JdbcFactory jdbcFactory, String role) {
         JdbcOperations jdbc = new JdbcOperations(jdbcFactory);
         
-        var results = jdbc.executeQuery(
+        CloseableIterator<String> results = jdbc.executeQuery(
           "select USERNAME from USERS where ROLE = :userRole",
           Map.of("userRole", role),
           rs -> rs.getString("USERNAME")
