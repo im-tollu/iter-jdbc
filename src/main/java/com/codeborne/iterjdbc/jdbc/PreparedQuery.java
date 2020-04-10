@@ -22,10 +22,7 @@ public class PreparedQuery<E> implements AutoCloseable {
 
   public CloseableIterator<E> execute(Map<String, Object> params) {
     try {
-      var positionalParams = namedSql.toPositionalParams(params);
-      for (int pos = 1; pos <= positionalParams.length; pos++) {
-        stmt.setObject(pos, positionalParams[pos - 1]);
-      }
+      PreparedQueriesUtils.setParams(stmt, namedSql.toPositionalParams(params));
       var rs = stmt.executeQuery();
       return new RsIterator<>(rs, rowMapper);
     } catch (SQLException e) {
@@ -35,11 +32,7 @@ public class PreparedQuery<E> implements AutoCloseable {
 
   @Override
   public void close() {
-    try {
-      stmt.close();
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    PreparedQueriesUtils.close(stmt);
   }
 
   @Override
