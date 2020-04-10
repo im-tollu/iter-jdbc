@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -42,7 +43,17 @@ class RsIteratorTest {
     verify(rs).close();
   }
 
-  @Test
-  void next() {
+  @Test @SuppressWarnings("ConstantConditions")
+  void stream() throws SQLException {
+    when(rs.next()).thenReturn(true, true, true, false);
+    when(rs.getString(any())).thenReturn("A", "B", "C");
+    var rsIterator = new RsIterator<>(rs, rs -> rs.getString("COLUMN_NAME"));
+    var isStreamClosed = new AtomicBoolean(false);
+    rsIterator.onClose(() -> isStreamClosed.set(true));
+
+    var stream = rsIterator.stream();
+
+    assertThat(stream).containsExactly("A", "B", "C");
+    assertThat(isStreamClosed).isTrue();
   }
 }
