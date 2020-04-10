@@ -1,39 +1,34 @@
 package com.codeborne.iterjdbc;
 
-import com.codeborne.iterjdbc.jdbc.PreparedQueries;
 import com.codeborne.iterjdbc.jdbc.PreparedQuery;
 import com.codeborne.iterjdbc.jdbc.PreparedUpdate;
-import com.codeborne.iterjdbc.jdbc.Queries;
 
-import java.sql.Connection;
 import java.util.Map;
 
 public class JdbcOperations {
-  private final PreparedQueries preparedQueries;
-  private final Queries queries;
+  private final JdbcFactory factory;
 
-  public JdbcOperations(Connection conn) {
-    this.preparedQueries = new PreparedQueries(conn);
-    this.queries = new Queries(preparedQueries);
+  public JdbcOperations(JdbcFactory factory) {
+    this.factory = factory;
   }
 
   public <E> CloseableIterator<E> executeQuery(String sql, Map<String, Object> params, RowMapper<E> rowMapper) {
-    return queries.executeQuery(sql, params, rowMapper);
+    return factory.getQueries().executeQuery(sql, params, rowMapper);
   }
 
   public <E> E executeQueryForSingleResult(String sql, Map<String, Object> params, RowMapper<E> rowMapper) {
-    return queries.executeQueryForSingleResult(sql, params, rowMapper);
+    return factory.getQueries().executeQueryForSingleResult(sql, params, rowMapper);
   }
 
   public <E> PreparedQuery<E> prepareQuery(String sql, RowMapper<E> rowMapper) {
-    return preparedQueries.prepareQuery(sql, rowMapper);
+    return factory.getPreparedQueries().prepareQuery(sql, rowMapper);
   }
 
   public int executeUpdate(String sql, Map<String, Object> params) {
-    return queries.executeUpdate(sql, params);
+    return factory.getQueries().executeUpdate(sql, params);
   }
 
   public PreparedUpdate prepareUpdate(String sql) {
-    return preparedQueries.prepareUpdate(sql);
+    return factory.getPreparedQueries().prepareUpdate(sql);
   }
 }
