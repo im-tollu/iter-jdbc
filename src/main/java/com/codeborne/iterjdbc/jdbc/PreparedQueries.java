@@ -13,7 +13,7 @@ public class PreparedQueries {
     this.conn = conn;
   }
 
-  <E> PreparedQuery<E> prepareQuery(String sql, RowMapper<E> rowMapper) {
+  public <E> PreparedQuery<E> prepareQuery(String sql, RowMapper<E> rowMapper) {
     try {
       var namedSql = NamedSql.parse(sql);
       var stmt = conn.prepareStatement(namedSql.getSqlPositional());
