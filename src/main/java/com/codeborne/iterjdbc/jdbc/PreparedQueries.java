@@ -22,4 +22,14 @@ public class PreparedQueries {
       throw new RuntimeException(e);
     }
   }
+
+  public PreparedUpdate prepareUpdate(String sql) {
+    try {
+      var namedSql = NamedSql.parse(sql);
+      var stmt = conn.prepareStatement(namedSql.getSqlPositional());
+      return new PreparedUpdate(stmt, namedSql);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

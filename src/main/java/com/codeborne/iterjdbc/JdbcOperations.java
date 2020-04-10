@@ -2,6 +2,7 @@ package com.codeborne.iterjdbc;
 
 import com.codeborne.iterjdbc.jdbc.PreparedQueries;
 import com.codeborne.iterjdbc.jdbc.PreparedQuery;
+import com.codeborne.iterjdbc.jdbc.PreparedUpdate;
 import com.codeborne.iterjdbc.jdbc.Queries;
 
 import java.sql.Connection;
@@ -22,5 +23,9 @@ public class JdbcOperations {
 
   public <E> PreparedQuery<E> prepareQuery(String sql, RowMapper<E> rowMapper) {
     return preparedQueries.prepareQuery(sql, rowMapper);
+  }
+
+  public PreparedUpdate prepareUpdate(String sql) {
+    return preparedQueries.prepareUpdate(sql);
   }
 }
