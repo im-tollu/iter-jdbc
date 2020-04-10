@@ -56,4 +56,8 @@ public class RsIterator<E> extends WithCloseHandlers implements CloseableIterato
       throw new RuntimeException(e);
     }
   }
+
+  boolean hasSameResultSet(ResultSet thatRs) {
+    return this.rs == thatRs;
+  }
 }
