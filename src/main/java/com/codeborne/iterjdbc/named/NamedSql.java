@@ -10,7 +10,8 @@ import static java.lang.Character.isLetterOrDigit;
 import static java.lang.String.format;
 
 public class NamedSql {
-  private static final char START_PARAM = ':';
+  private static final char PARAM_TOKEN = ':';
+  private static final String INLINE_COMMENT_TOKEN = "--";
 
   private final String sqlNamed;
   private final String sqlPositional;
@@ -31,6 +32,14 @@ public class NamedSql {
     var sqlPositional = new StringBuilder();
     int pos = 0;
     while (pos < sql.length()) {
+      if (isInlineCommentToken(sql, pos)) {
+        var inlineComment = seekInlineComment(sql, inlineCommentStart(pos));
+        if (inlineComment.getLen() > 0) {
+          sqlPositional.append(INLINE_COMMENT_TOKEN).append(inlineComment.getValue());
+          pos = inlineComment.afterEnd;
+          continue;
+        }
+      }
       if (isParamNameToken(sql, pos)) {
         var paramName = seekParamName(sql, paramNameStart(pos));
         if (paramName.getLen() > 0) {
@@ -46,16 +55,31 @@ public class NamedSql {
     return new NamedSql(sql, sqlPositional.toString(), params);
   }
 
+  private static boolean isInlineCommentToken(String s, int pos) {
+    int commentStart = inlineCommentStart(pos);
+    return isWithinStringBounds(s, commentStart)
+      && s.subSequence(pos, commentStart).equals(INLINE_COMMENT_TOKEN);
+  }
+
+  private static int inlineCommentStart(int tokenStart) {
+    return tokenStart + 2;
+  }
+
+  private static Fragment seekInlineComment(String s, int start) {
+    int afterEnd = start;
+    while (afterEnd < s.length() && s.charAt(afterEnd) != '\n') {
+      afterEnd++;
+    }
+    return new Fragment(s, start, afterEnd);
+  }
+
   private static boolean isParamNameToken(String s, int pos) {
-    return s.charAt(pos) == START_PARAM && !isOutOfString(s, paramNameStart(pos));
+    return isWithinStringBounds(s, paramNameStart(pos))
+      && s.charAt(pos) == PARAM_TOKEN;
   }
 
   private static int paramNameStart(int tokenStart) {
     return tokenStart  + 1;
-  }
-
-  private static boolean isOutOfString(String s, int pos) {
-    return pos >= s.length();
   }
 
   private static Fragment seekParamName(String s, int start) {
@@ -64,6 +88,10 @@ public class NamedSql {
       afterEnd++;
     }
     return new Fragment(s, start, afterEnd);
+  }
+
+  private static boolean isWithinStringBounds(String s, int pos) {
+    return pos < s.length();
   }
 
   @Override
