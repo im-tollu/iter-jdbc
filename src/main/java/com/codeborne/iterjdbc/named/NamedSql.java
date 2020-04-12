@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
-import static java.lang.Character.isLetterOrDigit;
 import static java.lang.String.format;
 
 public class NamedSql {
@@ -34,7 +34,7 @@ public class NamedSql {
     while (pos < sql.length()) {
       if (isInlineCommentToken(sql, pos)) {
         var inlineComment = seekInlineComment(sql, inlineCommentStart(pos));
-        if (inlineComment.getLen() > 0) {
+        if (inlineComment.isNotEmpty()) {
           sqlPositional.append(INLINE_COMMENT_TOKEN).append(inlineComment.getValue());
           pos = inlineComment.afterEnd;
           continue;
@@ -42,7 +42,7 @@ public class NamedSql {
       }
       if (isParamNameToken(sql, pos)) {
         var paramName = seekParamName(sql, paramNameStart(pos));
-        if (paramName.getLen() > 0) {
+        if (paramName.isNotEmpty()) {
           params.add(paramName.getValue());
           sqlPositional.append('?');
           pos = paramName.afterEnd;
@@ -66,11 +66,7 @@ public class NamedSql {
   }
 
   private static Fragment seekInlineComment(String s, int start) {
-    int afterEnd = start;
-    while (afterEnd < s.length() && s.charAt(afterEnd) != '\n') {
-      afterEnd++;
-    }
-    return new Fragment(s, start, afterEnd);
+    return seekFragment(s, start, ch -> ch != '\n');
   }
 
   private static boolean isParamNameToken(String s, int pos) {
@@ -83,15 +79,19 @@ public class NamedSql {
   }
 
   private static Fragment seekParamName(String s, int start) {
-    int afterEnd = start;
-    while (afterEnd < s.length() && isLetterOrDigit(s.charAt(afterEnd))) {
-      afterEnd++;
-    }
-    return new Fragment(s, start, afterEnd);
+    return seekFragment(s, start, Character::isLetterOrDigit);
   }
 
   private static boolean isWithinStringBounds(String s, int pos) {
     return pos < s.length();
+  }
+
+  private static Fragment seekFragment(String s, int start, Predicate<Character> whileMatches) {
+    int afterEnd = start;
+    while (afterEnd < s.length() && whileMatches.test(s.charAt(afterEnd))) {
+      afterEnd++;
+    }
+    return new Fragment(s, start, afterEnd);
   }
 
   @Override
@@ -144,8 +144,8 @@ public class NamedSql {
       this.afterEnd = afterEnd;
     }
 
-    int getLen() {
-      return afterEnd - start;
+    boolean isNotEmpty() {
+      return s.length() > 0;
     }
 
     String getValue() {
