@@ -31,28 +31,39 @@ public class NamedSql {
     var sqlPositional = new StringBuilder();
     int pos = 0;
     while (pos < sql.length()) {
-      if (sql.charAt(pos) == START_PARAM) {
-        int start = pos + 1;
-        int wordLen = seekWord(sql, start);
-        if (wordLen > 0) {
-          params.add(sql.substring(start, start + wordLen));
+      if (isParamNameToken(sql, pos)) {
+        var paramName = seekParamName(sql, paramNameStart(pos));
+        if (paramName.getLen() > 0) {
+          params.add(paramName.getValue());
           sqlPositional.append('?');
+          pos = paramName.afterEnd;
+          continue;
         }
-        pos = start + wordLen;
-      } else {
-        sqlPositional.append(sql.charAt(pos));
-        pos++;
       }
+      sqlPositional.append(sql.charAt(pos));
+      pos++;
     }
     return new NamedSql(sql, sqlPositional.toString(), params);
   }
 
-  private static int seekWord(String s, int start) {
+  private static boolean isParamNameToken(String s, int pos) {
+    return s.charAt(pos) == START_PARAM && !isOutOfString(s, paramNameStart(pos));
+  }
+
+  private static int paramNameStart(int tokenStart) {
+    return tokenStart  + 1;
+  }
+
+  private static boolean isOutOfString(String s, int pos) {
+    return pos >= s.length();
+  }
+
+  private static Fragment seekParamName(String s, int start) {
     int afterEnd = start;
     while (afterEnd < s.length() && isLetterOrDigit(s.charAt(afterEnd))) {
       afterEnd++;
     }
-    return afterEnd - start;
+    return new Fragment(s, start, afterEnd);
   }
 
   @Override
@@ -92,5 +103,25 @@ public class NamedSql {
       }
       return paramVal;
     };
+  }
+
+  static class Fragment{
+    final String s;
+    final int start;
+    final int afterEnd;
+
+    Fragment(String s, int start, int afterEnd) {
+      this.s = s;
+      this.start = start;
+      this.afterEnd = afterEnd;
+    }
+
+    int getLen() {
+      return afterEnd - start;
+    }
+
+    String getValue() {
+      return s.substring(start, afterEnd);
+    }
   }
 }
