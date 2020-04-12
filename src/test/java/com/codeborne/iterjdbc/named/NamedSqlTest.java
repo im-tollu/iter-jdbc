@@ -16,7 +16,10 @@ class NamedSqlTest {
         "select F1 from TABLE t where t.F2=? and t.F3=?",
         List.of("abc", "def")
       ));
+  }
 
+  @Test
+  void parse_withInlineComment() {
     assertThat(NamedSql.parse("select F1 from TABLE t where t.F2=:abc -- and t.F3=:def"))
       .isEqualTo(new NamedSql(
         "select F1 from TABLE t where t.F2=:abc -- and t.F3=:def",
@@ -30,7 +33,10 @@ class NamedSqlTest {
         "select F1 from TABLE t where t.F2=? -- and t.F3=:def\nand t.F4=?",
         List.of("abc", "ghi")
       ));
+  }
 
+  @Test
+  void parse_withStringLiteral() {
     assertThat(NamedSql.parse("select F1 from TABLE t where t.F2='and t.F3=:def\n ' and t.F4=:ghi"))
       .isEqualTo(new NamedSql(
         "select F1 from TABLE t where t.F2='and t.F3=:def\n ' and t.F4=:ghi",
