@@ -12,6 +12,7 @@ import static java.lang.String.format;
 public class NamedSql {
   private static final char PARAM_TOKEN = ':';
   private static final String INLINE_COMMENT_TOKEN = "--";
+  private static final char STRING_LITERAL_TOKEN = '\'';
 
   private final String sqlNamed;
   private final String sqlPositional;
@@ -32,6 +33,17 @@ public class NamedSql {
     var sqlPositional = new StringBuilder();
     int pos = 0;
     while (pos < sql.length()) {
+      if (isStringLiteralToken(sql, pos)) {
+        var stringLiteral = seekStringLiteral(sql, stringLiteralStart(pos));
+        if (stringLiteral.isNotEmpty()) {
+          sqlPositional
+            .append(STRING_LITERAL_TOKEN)
+            .append(stringLiteral.getValue())
+            .append(STRING_LITERAL_TOKEN);
+          pos = stringLiteralAfterEnd(stringLiteral.afterEnd);
+          continue;
+        }
+      }
       if (isInlineCommentToken(sql, pos)) {
         var inlineComment = seekInlineComment(sql, inlineCommentStart(pos));
         if (inlineComment.isNotEmpty()) {
@@ -53,6 +65,23 @@ public class NamedSql {
       pos++;
     }
     return new NamedSql(sql, sqlPositional.toString(), params);
+  }
+
+  private static Fragment seekStringLiteral(String s, int start) {
+    return seekFragment(s, start, ch -> ch != STRING_LITERAL_TOKEN);
+  }
+
+  private static boolean isStringLiteralToken(String s, int pos) {
+    return isWithinStringBounds(s, stringLiteralStart(pos))
+      && s.charAt(pos) == STRING_LITERAL_TOKEN;
+  }
+
+  private static int stringLiteralStart(int tokenStart) {
+    return tokenStart + 1;
+  }
+
+  private static int stringLiteralAfterEnd(int literalAfterEnd) {
+    return literalAfterEnd + 1;
   }
 
   private static boolean isInlineCommentToken(String s, int pos) {

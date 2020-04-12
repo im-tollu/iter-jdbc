@@ -30,5 +30,12 @@ class NamedSqlTest {
         "select F1 from TABLE t where t.F2=? -- and t.F3=:def\nand t.F4=?",
         List.of("abc", "ghi")
       ));
+
+    assertThat(NamedSql.parse("select F1 from TABLE t where t.F2='and t.F3=:def\n ' and t.F4=:ghi"))
+      .isEqualTo(new NamedSql(
+        "select F1 from TABLE t where t.F2='and t.F3=:def\n ' and t.F4=:ghi",
+        "select F1 from TABLE t where t.F2='and t.F3=:def\n ' and t.F4=?",
+        List.of("ghi")
+      ));
   }
 }
