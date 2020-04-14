@@ -1,7 +1,10 @@
 package com.codeborne.iterjdbc.named;
 
 import com.codeborne.iterjdbc.RowMapper;
+import com.codeborne.iterjdbc.jdbc.PreparedQuery;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Objects;
 
 public class MappedNamedSql<E> {
@@ -11,6 +14,15 @@ public class MappedNamedSql<E> {
   public MappedNamedSql(NamedSql namedSql, RowMapper<E> rowMapper) {
     this.namedSql = namedSql;
     this.rowMapper = rowMapper;
+  }
+
+  public PreparedQuery<E> prepareQuery(Connection conn) {
+    try {
+      var stmt = conn.prepareStatement(namedSql.getSqlPositional());
+      return new PreparedQuery<>(stmt, namedSql, rowMapper);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
