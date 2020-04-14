@@ -1,5 +1,6 @@
 package com.codeborne.iterjdbc.named;
 
+import com.codeborne.iterjdbc.RowMapper;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -43,5 +44,13 @@ class NamedSqlTest {
         "select F1 from TABLE t where t.F2='and t.F3=:def\n ' and t.F4=?",
         List.of("ghi")
       ));
+  }
+
+  @Test
+  void withRowMapper() {
+    NamedSql namedSql = NamedSql.parse("some sql query");
+    RowMapper<String> rowMapper = rs -> "any";
+
+    assertThat(namedSql.withRowMapper(rowMapper)).isEqualTo(new MappedNamedSql<>(namedSql, rowMapper));
   }
 }

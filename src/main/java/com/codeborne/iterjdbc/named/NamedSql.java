@@ -1,5 +1,7 @@
 package com.codeborne.iterjdbc.named;
 
+import com.codeborne.iterjdbc.RowMapper;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -16,6 +18,10 @@ public class NamedSql {
     this.sqlNamed = sqlNamed;
     this.sqlPositional = sqlPositional;
     this.paramNames = paramNames;
+  }
+
+  public <E> MappedNamedSql<E> withRowMapper(RowMapper<E> rowMapper) {
+    return new MappedNamedSql<>(this, rowMapper);
   }
 
   public String getSqlPositional() {
