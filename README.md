@@ -9,29 +9,74 @@ This project was inspired by Spring-Jdbc. In particular, named parameter SQL
     
 ## Usage
 
-First, `JdbcFactory` should be implemented. Its responsibility is to current
- or new `java.sql.connection` and use it to create instances of `Queries` and
-  `PreparedQueries`. It may be needed to use current connection if queries
-   should be executed in some transaction.
-   
-Next, create an instance of `JdbcOperations` - it can be long-lived and used
- as a field of repository classes. Don't forget to close CloseableIterators
-  in the end.
+To use this library you need an instance of `java.sql.Connection`.
+
+```
+Connection conn = dataSource.getConnection();
+```
+
+### Queries that return result sets
+
+**Single-usage query** - PreparedStatement is closed after execution.
+
+```
+var query = new Query(
+    "select USERNAME from USERS where ROLE = :userRole",
+    rs -> rs.getString("USERNAME")
+);
+try(var teachers = query.connect(conn).runOnce(Map.of("userRole", "teacher"))) {
+    teachers.forEachRemaining(System.out::println);
+}
+```
+
+**Single-usage single-result query** - PreparedStatement and results are
+ closed after execution.
+
+```
+var query = new Query(
+    "select count(1) from USERS where ROLE = :userRole",
+    rs -> rs.getString("USERNAME")
+);
+var teachersCount = query.connect(conn).runOnceForSingleResult(Map.of("userRole", "teacher"));
+
+System.out.println("Total teachers in the college: " + teachersCount);
+```
  
-```java
-public class Example {
-    public void printUsers(JdbcFactory jdbcFactory, String role) {
-        JdbcOperations jdbc = new JdbcOperations(jdbcFactory);
-        
-        CloseableIterator<String> results = jdbc.executeQuery(
-          "select USERNAME from USERS where ROLE = :userRole",
-          Map.of("userRole", role),
-          rs -> rs.getString("USERNAME")
-        );
-        
-        results.forEachRemaining(System.out::println);  
-        
-        results.close();
-    }
+**Reusable query** - PreparedStatement is left open after execution.
+ 
+```
+try(
+   var query = new Query(
+       "select USERNAME from USERS where ROLE = :userRole",
+       rs -> rs.getString("USERNAME")
+   )
+) {
+   System.out.println("Teachers:");
+   try(var teachers = query.connect(conn).run(Map.of("userRole", "teacher"))) {
+       teachers.forEachRemaining(System.out::println);
+   }
+   
+   System.out.println("\nStudents:");
+   try(var students = query.connect(conn).run(Map.of("userRole", "students"))) {
+       students.forEachRemaining(System.out::println);
+   }
+}
+```
+
+**Reusable single-result query** - PreparedStatement is left open and
+ result set is closed after execution.
+ 
+```
+try(
+   var query = new Query(
+       "select count(1) from USERS where ROLE = :userRole",
+       rs -> rs.getString("USERNAME")
+   )
+) {
+   var teachersCount = query.connect(conn).runForSingleResult(Map.of("userRole", "teacher"));
+   System.out.println("Total teachers in the college: " + teachersCount);
+   
+   var studentsCount = query.connect(conn).runForSingleResult(Map.of("userRole", "student"));
+   System.out.println("Total students in the college: " + studentsCount);
 }
 ```
