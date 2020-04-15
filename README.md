@@ -46,18 +46,18 @@ System.out.println("Total teachers in the college: " + teachersCount);
  
 ```
 try(
-   var query = new Query(
+   var preparedQuery = new Query(
        "select USERNAME from USERS where ROLE = :userRole",
        rs -> rs.getString("USERNAME")
-   )
+   ).connect(conn)
 ) {
    System.out.println("Teachers:");
-   try(var teachers = query.connect(conn).run(Map.of("userRole", "teacher"))) {
+   try(var teachers = preparedQuery.run(Map.of("userRole", "teacher"))) {
        teachers.forEachRemaining(System.out::println);
    }
    
    System.out.println("\nStudents:");
-   try(var students = query.connect(conn).run(Map.of("userRole", "students"))) {
+   try(var students = preparedQuery.run(Map.of("userRole", "students"))) {
        students.forEachRemaining(System.out::println);
    }
 }
@@ -68,15 +68,15 @@ try(
  
 ```
 try(
-   var query = new Query(
+   var preparedQuery = new Query(
        "select count(1) from USERS where ROLE = :userRole",
        rs -> rs.getString("USERNAME")
-   )
+   ).connect(conn)
 ) {
-   var teachersCount = query.connect(conn).runForSingleResult(Map.of("userRole", "teacher"));
+   var teachersCount = preparedQuery.runForSingleResult(Map.of("userRole", "teacher"));
    System.out.println("Total teachers in the college: " + teachersCount);
    
-   var studentsCount = query.connect(conn).runForSingleResult(Map.of("userRole", "student"));
+   var studentsCount = preparedQuery.runForSingleResult(Map.of("userRole", "student"));
    System.out.println("Total students in the college: " + studentsCount);
 }
 ```
