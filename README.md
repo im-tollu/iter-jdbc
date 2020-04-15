@@ -7,6 +7,18 @@ This project was inspired by Spring-Jdbc. In particular, named parameter SQL
    to provide and accept iterators wherever possible instead of callbacks and
     collections.
     
+## Add to your project
+
+Using the following Maven coordinates:
+
+```
+<dependency>
+  <groupId>com.codeborne</groupId>
+  <artifactId>iter-jdbc</artifactId>
+  <version>0.1-SNAPSHOT</version>
+</dependency>
+```
+    
 ## Usage
 
 To use this library you need an instance of `java.sql.Connection`.
