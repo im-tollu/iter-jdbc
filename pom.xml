@@ -7,6 +7,22 @@
   <groupId>com.codeborne</groupId>
   <artifactId>iter-jdbc</artifactId>
   <version>0.1-SNAPSHOT</version>
+  <name>iter-jdbc</name>
+  <description>iter-jdbc - iterator-focused JDBC wrapper library</description>
+  <url>https://github.com/im-tollu/iter-jdbc</url>
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>im-tollu</id>
+      <name>Ilja Tollu</name>
+    </developer>
+  </developers>
 
   <dependencies>
     <dependency>
@@ -128,4 +144,35 @@
     <url>https://github.com/im-tollu/iter-jdbc</url>
     <tag>HEAD</tag>
   </scm>
+
+  <profiles>
+    <!-- GPG Signature on release -->
+    <profile>
+      <id>release-sign-artifacts</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
