@@ -8,9 +8,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class WithCloseHandlersTest {
   @Test
   void close() {
-    var closingSequence = new StringBuilder();
+    StringBuilder closingSequence = new StringBuilder();
 
-    try (var withCloseHandlers = new WithCloseHandlers() {}) {
+    try (WithCloseHandlers withCloseHandlers = new WithCloseHandlers() {}) {
       withCloseHandlers.onClose(() -> closingSequence.append("a"));
       withCloseHandlers.onClose(() -> closingSequence.append("b"));
       withCloseHandlers.onClose(() -> closingSequence.append("c"));
@@ -21,8 +21,8 @@ class WithCloseHandlersTest {
 
   @Test
   void close_withExceptions() {
-    var withCloseHandlers = new WithCloseHandlers() {};
-    var expectedException = new RuntimeException();
+    WithCloseHandlers withCloseHandlers = new WithCloseHandlers() {};
+    RuntimeException expectedException = new RuntimeException();
     withCloseHandlers.onClose(() -> { throw expectedException; });
 
     assertThatThrownBy(withCloseHandlers::close)

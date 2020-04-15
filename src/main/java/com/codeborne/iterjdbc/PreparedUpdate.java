@@ -28,7 +28,7 @@ public class PreparedUpdate implements AutoCloseable {
   }
 
   public int runOnce(Map<String, Object> params) {
-    try(this) {
+    try(PreparedUpdate ignored = this) {
       return run(params);
     }
   }
@@ -36,7 +36,7 @@ public class PreparedUpdate implements AutoCloseable {
   public int runBatch(Iterator<Map<String, Object>> paramsIterator) {
     try {
       while (paramsIterator.hasNext()) {
-        var params = paramsIterator.next();
+        Map<String, Object> params = paramsIterator.next();
         PreparedQueriesUtils.setParams(stmt, namedSql.toPositionalParams(params));
         stmt.addBatch();
       }
@@ -47,7 +47,7 @@ public class PreparedUpdate implements AutoCloseable {
   }
 
   public int runBatchOnce(Iterator<Map<String, Object>> paramsIterator) {
-    try (this) {
+    try (PreparedUpdate ignored = this) {
       return runBatch(paramsIterator);
     }
   }

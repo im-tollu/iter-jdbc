@@ -6,8 +6,11 @@ import org.junit.jupiter.api.Test;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.AbstractMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -19,10 +22,14 @@ class PreparedQueryTest {
 
   @Test
   void run() throws SQLException {
-    var rs = mock(ResultSet.class);
+    ResultSet rs = mock(ResultSet.class);
     when(statement.executeQuery()).thenReturn(rs);
+    Map<String, Object> params = Stream.of(
+      new AbstractMap.SimpleImmutableEntry<>("c", 123L),
+      new AbstractMap.SimpleImmutableEntry<>("d", "value of d"))
+      .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    var results = preparedQuery.run(Map.of("c", 123L, "d", "value of d"));
+    CloseableIterator<String> results = preparedQuery.run(params);
     results.close();
 
     verify(statement).setObject(1, 123L);
@@ -33,10 +40,14 @@ class PreparedQueryTest {
 
   @Test
   void runOnce() throws SQLException {
-    var rs = mock(ResultSet.class);
+    ResultSet rs = mock(ResultSet.class);
     when(statement.executeQuery()).thenReturn(rs);
+    Map<String, Object> params = Stream.of(
+      new AbstractMap.SimpleImmutableEntry<>("c", 123L),
+      new AbstractMap.SimpleImmutableEntry<>("d", "value of d"))
+      .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    var results = preparedQuery.runOnce(Map.of("c", 123L, "d", "value of d"));
+    CloseableIterator<String> results = preparedQuery.runOnce(params);
     results.close();
 
     verify(statement).setObject(1, 123L);
@@ -47,11 +58,15 @@ class PreparedQueryTest {
 
   @Test
   void runForSingleResult() throws SQLException {
-    var rs = mock(ResultSet.class);
+    ResultSet rs = mock(ResultSet.class);
     when(rs.next()).thenReturn(true, true, false);
     when(statement.executeQuery()).thenReturn(rs);
+    Map<String, Object> params = Stream.of(
+      new AbstractMap.SimpleImmutableEntry<>("c", 123L),
+      new AbstractMap.SimpleImmutableEntry<>("d", "value of d"))
+      .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    var result = preparedQuery.runForSingleResult(Map.of("c", 123L, "d", "value of d"));
+    String result = preparedQuery.runForSingleResult(params);
 
     verify(statement).setObject(1, 123L);
     verify(statement).setObject(2, "value of d");
@@ -61,11 +76,15 @@ class PreparedQueryTest {
 
   @Test
   void runOnceForSingleResult() throws SQLException {
-    var rs = mock(ResultSet.class);
+    ResultSet rs = mock(ResultSet.class);
     when(rs.next()).thenReturn(true, true, false);
     when(statement.executeQuery()).thenReturn(rs);
+    Map<String, Object> params = Stream.of(
+      new AbstractMap.SimpleImmutableEntry<>("c", 123L),
+      new AbstractMap.SimpleImmutableEntry<>("d", "value of d"))
+      .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    var result = preparedQuery.runOnceForSingleResult(Map.of("c", 123L, "d", "value of d"));
+    String result = preparedQuery.runOnceForSingleResult(params);
 
     verify(statement).setObject(1, 123L);
     verify(statement).setObject(2, "value of d");

@@ -28,9 +28,9 @@ public class NamedSql {
 
   private Function<String, Object> extractParam(Map<String, Object> params) {
     return (String paramName) -> {
-      var paramVal = params.get(paramName);
+      Object paramVal = params.get(paramName);
       if (paramVal == null) {
-        var msg = format("No value provided for [%s] in query [%s]", paramName, sqlNamed);
+        String msg = format("No value provided for [%s] in query [%s]", paramName, sqlNamed);
         throw new IllegalArgumentException(msg);
       }
       return paramVal;
@@ -45,7 +45,7 @@ public class NamedSql {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    var that = (NamedSql) o;
+    NamedSql that = (NamedSql) o;
     return sqlNamed.equals(that.sqlNamed) &&
       sqlPositional.equals(that.sqlPositional) &&
       paramNames.equals(that.paramNames);

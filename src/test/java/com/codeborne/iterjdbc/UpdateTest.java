@@ -14,12 +14,12 @@ import static org.mockito.Mockito.*;
 class UpdateTest {
   @Test
   void connect() throws SQLException {
-    var conn = mock(Connection.class);
-    var stmt = mock(PreparedStatement.class);
+    Connection conn = mock(Connection.class);
+    PreparedStatement stmt = mock(PreparedStatement.class);
     when(conn.prepareStatement(any())).thenReturn(stmt);
-    var namedSql = NamedSql.parse("some sql query");
+    NamedSql namedSql = NamedSql.parse("some sql query");
 
-    var preparedUpdate = new Update(namedSql).connect(conn);
+    PreparedUpdate preparedUpdate = new Update(namedSql).connect(conn);
 
     verify(conn).prepareStatement(namedSql.getSqlPositional());
     assertThat(preparedUpdate).isEqualTo(new PreparedUpdate(stmt, namedSql));
@@ -27,7 +27,7 @@ class UpdateTest {
 
   @Test
   void constructors_produceEqualInstances() {
-    var sql = "some sql query";
+    String sql = "some sql query";
 
     assertThat(new Update(sql)).isEqualTo(new Update(NamedSql.parse(sql)));
   }

@@ -3,6 +3,7 @@ package com.codeborne.iterjdbc;
 import com.codeborne.iterjdbc.named.NamedSql;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
@@ -21,7 +22,7 @@ public class PreparedQuery<E> implements AutoCloseable {
   public CloseableIterator<E> run(Map<String, Object> params) {
     try {
       PreparedQueriesUtils.setParams(this.stmt, this.namedSql.toPositionalParams(params));
-      var rs = this.stmt.executeQuery();
+      ResultSet rs = this.stmt.executeQuery();
       return new RsIterator<>(rs, this.rowMapper);
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -29,19 +30,19 @@ public class PreparedQuery<E> implements AutoCloseable {
   }
 
   public CloseableIterator<E> runOnce(Map<String, Object> params) {
-    var results = run(params);
+    CloseableIterator<E> results = run(params);
     results.onClose(this::close);
     return results;
   }
 
   public E runForSingleResult(Map<String, Object> params) {
-    try (var results = run(params)) {
+    try (CloseableIterator<E> results = run(params)) {
       return results.hasNext() ? results.next() : null;
     }
   }
 
   public E runOnceForSingleResult(Map<String, Object> params) {
-    try (this) {
+    try (PreparedQuery<E> ignored = this) {
       return runForSingleResult(params);
     }
   }

@@ -1,6 +1,7 @@
 package com.codeborne.iterjdbc;
 
 import java.util.Iterator;
+import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -14,7 +15,7 @@ public interface CloseableIterator<E> extends Iterator<E>, AutoCloseable {
   }
 
   default Stream<E> stream() {
-    var spliterator = Spliterators.spliteratorUnknownSize(this, 0);
+    Spliterator<E> spliterator = Spliterators.spliteratorUnknownSize(this, 0);
     return StreamSupport.stream(spliterator, false).onClose(this::close);
   }
 }

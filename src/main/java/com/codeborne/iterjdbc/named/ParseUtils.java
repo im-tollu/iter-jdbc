@@ -9,12 +9,12 @@ class ParseUtils {
   static final char STRING_LITERAL_TOKEN = '\'';
 
   static NamedSql parse(String sql) {
-    var params = new ArrayList<String>();
-    var sqlPositional = new StringBuilder();
+    ArrayList<String> params = new ArrayList<>();
+    StringBuilder sqlPositional = new StringBuilder();
     int pos = 0;
     while (pos < sql.length()) {
       if (isStringLiteralToken(sql, pos)) {
-        var stringLiteral = seekStringLiteral(sql, stringLiteralStart(pos));
+        Fragment stringLiteral = seekStringLiteral(sql, stringLiteralStart(pos));
         if (stringLiteral.isNotEmpty()) {
           sqlPositional
             .append(STRING_LITERAL_TOKEN)
@@ -25,7 +25,7 @@ class ParseUtils {
         }
       }
       if (isInlineCommentToken(sql, pos)) {
-        var inlineComment = seekInlineComment(sql, inlineCommentStart(pos));
+        Fragment inlineComment = seekInlineComment(sql, inlineCommentStart(pos));
         if (inlineComment.isNotEmpty()) {
           sqlPositional.append(INLINE_COMMENT_TOKEN).append(inlineComment.getValue());
           pos = inlineComment.afterEnd;
@@ -33,7 +33,7 @@ class ParseUtils {
         }
       }
       if (isParamNameToken(sql, pos)) {
-        var paramName = seekParamName(sql, paramNameStart(pos));
+        Fragment paramName = seekParamName(sql, paramNameStart(pos));
         if (paramName.isNotEmpty()) {
           params.add(paramName.getValue());
           sqlPositional.append('?');

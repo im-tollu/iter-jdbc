@@ -14,14 +14,14 @@ import static org.mockito.Mockito.*;
 class QueryTest {
   @Test
   void connect() throws SQLException {
-    var namedSql = NamedSql.parse("some sql query");
+    NamedSql namedSql = NamedSql.parse("some sql query");
     RowMapper<String> rowMapper = rs -> "any";
-    var conn = mock(Connection.class);
-    var stmt = mock(PreparedStatement.class);
+    Connection conn = mock(Connection.class);
+    PreparedStatement stmt = mock(PreparedStatement.class);
     when(conn.prepareStatement(any())).thenReturn(stmt);
-    var query = new Query<>(namedSql, rowMapper);
+    Query<String> query = new Query<>(namedSql, rowMapper);
 
-    var preparedQuery = query.connect(conn);
+    PreparedQuery<String> preparedQuery = query.connect(conn);
 
     verify(conn).prepareStatement(namedSql.getSqlPositional());
     assertThat(preparedQuery).isEqualTo(new PreparedQuery<>(stmt, namedSql, rowMapper));
@@ -29,7 +29,7 @@ class QueryTest {
 
   @Test
   void constructors_produceEqualInstances() {
-    var sql = "some sql query";
+    String sql = "some sql query";
     RowMapper<String> rowMapper = rs -> "any";
 
     assertThat(new Query<>(sql, rowMapper)).isEqualTo(new Query<>(NamedSql.parse(sql), rowMapper));

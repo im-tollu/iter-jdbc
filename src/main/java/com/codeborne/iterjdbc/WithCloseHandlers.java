@@ -8,7 +8,7 @@ public abstract class WithCloseHandlers implements AutoCloseable {
 
   @Override
   public void close() {
-    var errs = new ArrayList<Throwable>();
+    ArrayList<Throwable> errs = new ArrayList<>();
     closeHandlers.forEach(handler -> {
       try {
         handler.run();
@@ -17,7 +17,7 @@ public abstract class WithCloseHandlers implements AutoCloseable {
       }
     });
     if (errs.size() > 0) {
-      var exception = new RuntimeException("Cannot invoke all close handlers");
+      RuntimeException exception = new RuntimeException("Cannot invoke all close handlers");
       errs.forEach(exception::addSuppressed);
       throw exception;
     }

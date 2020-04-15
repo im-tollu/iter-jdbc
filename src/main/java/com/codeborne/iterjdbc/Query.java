@@ -3,6 +3,7 @@ package com.codeborne.iterjdbc;
 import com.codeborne.iterjdbc.named.NamedSql;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Objects;
 
@@ -22,7 +23,7 @@ public class Query<E> {
 
   public PreparedQuery<E> connect(Connection conn) {
     try {
-      var stmt = conn.prepareStatement(namedSql.getSqlPositional());
+      PreparedStatement stmt = conn.prepareStatement(namedSql.getSqlPositional());
       return new PreparedQuery<>(stmt, namedSql, rowMapper);
     } catch (SQLException e) {
       throw new RuntimeException(e);

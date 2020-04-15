@@ -2,8 +2,8 @@ package com.codeborne.iterjdbc.named;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class NamedSqlTest {
@@ -14,7 +14,7 @@ class NamedSqlTest {
       .isEqualTo(new NamedSql(
         "select F1 from TABLE t where t.F2=:abc and t.F3=:def",
         "select F1 from TABLE t where t.F2=? and t.F3=?",
-        List.of("abc", "def")
+        asList("abc", "def")
       ));
   }
 
@@ -24,14 +24,14 @@ class NamedSqlTest {
       .isEqualTo(new NamedSql(
         "select F1 from TABLE t where t.F2=:abc -- and t.F3=:def",
         "select F1 from TABLE t where t.F2=? -- and t.F3=:def",
-        List.of("abc")
+        singletonList("abc")
       ));
 
     assertThat(NamedSql.parse("select F1 from TABLE t where t.F2=:abc -- and t.F3=:def\nand t.F4=:ghi"))
       .isEqualTo(new NamedSql(
         "select F1 from TABLE t where t.F2=:abc -- and t.F3=:def\nand t.F4=:ghi",
         "select F1 from TABLE t where t.F2=? -- and t.F3=:def\nand t.F4=?",
-        List.of("abc", "ghi")
+        asList("abc", "ghi")
       ));
   }
 
@@ -41,7 +41,7 @@ class NamedSqlTest {
       .isEqualTo(new NamedSql(
         "select F1 from TABLE t where t.F2='and t.F3=:def\n ' and t.F4=:ghi",
         "select F1 from TABLE t where t.F2='and t.F3=:def\n ' and t.F4=?",
-        List.of("ghi")
+        singletonList("ghi")
       ));
   }
 }
