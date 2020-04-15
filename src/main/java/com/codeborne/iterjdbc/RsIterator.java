@@ -1,20 +1,16 @@
-package com.codeborne.iterjdbc.jdbc;
-
-import com.codeborne.iterjdbc.CloseableIterator;
-import com.codeborne.iterjdbc.WithCloseHandlers;
-import com.codeborne.iterjdbc.RowMapper;
+package com.codeborne.iterjdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-public class RsIterator<E> extends WithCloseHandlers implements CloseableIterator<E> {
+class RsIterator<E> extends WithCloseHandlers implements CloseableIterator<E> {
   private final ResultSet rs;
   private final RowMapper<E> rowMapper;
   private Boolean hasNext;
 
-  public RsIterator(ResultSet rs, RowMapper<E> rowMapper) {
+  RsIterator(ResultSet rs, RowMapper<E> rowMapper) {
     this.rs = rs;
     this.rowMapper = rowMapper;
     this.onClose(this::closeRs);

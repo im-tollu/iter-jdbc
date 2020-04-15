@@ -1,4 +1,4 @@
-package com.codeborne.iterjdbc.jdbc;
+package com.codeborne.iterjdbc;
 
 import com.codeborne.iterjdbc.named.NamedSql;
 import org.junit.jupiter.api.Test;
@@ -21,10 +21,10 @@ class PreparedUpdateTest {
   PreparedUpdate preparedUpdate = new PreparedUpdate(statement, namedSql);
 
   @Test
-  void execute() throws SQLException {
+  void run() throws SQLException {
     when(statement.executeUpdate()).thenReturn(12);
 
-    var affectedRows = preparedUpdate.execute(params);
+    var affectedRows = preparedUpdate.run(params);
 
     verify(statement).setObject(1, 123L);
     verify(statement).setObject(2, "value of c");
@@ -33,16 +33,42 @@ class PreparedUpdateTest {
   }
 
   @Test
-  void executeBatch() throws SQLException {
+  void runOnce() throws SQLException {
+    when(statement.executeUpdate()).thenReturn(12);
+
+    var affectedRows = preparedUpdate.runOnce(params);
+
+    verify(statement).setObject(1, 123L);
+    verify(statement).setObject(2, "value of c");
+    verify(statement).close();
+    assertThat(affectedRows).isEqualTo(12);
+  }
+
+  @Test
+  void runBatch() throws SQLException {
     when(statement.executeBatch()).thenReturn(new int[]{5, 7, SUCCESS_NO_INFO, EXECUTE_FAILED});
     var paramsIterator = List.of(params, params).iterator();
 
-    var affectedRows = preparedUpdate.executeBatch(paramsIterator);
+    var affectedRows = preparedUpdate.runBatch(paramsIterator);
 
     verify(statement, times(2)).setObject(1, 123L);
     verify(statement, times(2)).setObject(2, "value of c");
     verify(statement).executeBatch();
     verify(statement, never()).close();
+    assertThat(affectedRows).isEqualTo(12);
+  }
+
+  @Test
+  void runBatchOnce() throws SQLException {
+    when(statement.executeBatch()).thenReturn(new int[]{5, 7, SUCCESS_NO_INFO, EXECUTE_FAILED});
+    var paramsIterator = List.of(params, params).iterator();
+
+    var affectedRows = preparedUpdate.runBatchOnce(paramsIterator);
+
+    verify(statement, times(2)).setObject(1, 123L);
+    verify(statement, times(2)).setObject(2, "value of c");
+    verify(statement).executeBatch();
+    verify(statement).close();
     assertThat(affectedRows).isEqualTo(12);
   }
 

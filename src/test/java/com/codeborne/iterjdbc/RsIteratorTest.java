@@ -1,4 +1,4 @@
-package com.codeborne.iterjdbc.jdbc;
+package com.codeborne.iterjdbc;
 
 import org.junit.jupiter.api.Test;
 

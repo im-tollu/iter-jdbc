@@ -1,22 +1,26 @@
-package com.codeborne.iterjdbc.named;
+package com.codeborne.iterjdbc;
 
-import com.codeborne.iterjdbc.RowMapper;
-import com.codeborne.iterjdbc.jdbc.PreparedQuery;
+import com.codeborne.iterjdbc.named.NamedSql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Objects;
 
-public class MappedNamedSql<E> {
+public class Query<E> {
   private final NamedSql namedSql;
   private final RowMapper<E> rowMapper;
 
-  public MappedNamedSql(NamedSql namedSql, RowMapper<E> rowMapper) {
+  public Query(String sql, RowMapper<E> rowMapper) {
+    this.namedSql = NamedSql.parse(sql);
+    this.rowMapper = rowMapper;
+  }
+
+  public Query(NamedSql namedSql, RowMapper<E> rowMapper) {
     this.namedSql = namedSql;
     this.rowMapper = rowMapper;
   }
 
-  public PreparedQuery<E> prepareQuery(Connection conn) {
+  public PreparedQuery<E> connect(Connection conn) {
     try {
       var stmt = conn.prepareStatement(namedSql.getSqlPositional());
       return new PreparedQuery<>(stmt, namedSql, rowMapper);
@@ -29,7 +33,7 @@ public class MappedNamedSql<E> {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    MappedNamedSql<?> that = (MappedNamedSql<?>) o;
+    Query<?> that = (Query<?>) o;
     return namedSql.equals(that.namedSql) &&
       rowMapper.equals(that.rowMapper);
   }
@@ -41,7 +45,7 @@ public class MappedNamedSql<E> {
 
   @Override
   public String toString() {
-    return "MappedNamedSql{" +
+    return "Query{" +
       "namedSql=" + namedSql +
       ", rowMapper=" + rowMapper +
       '}';

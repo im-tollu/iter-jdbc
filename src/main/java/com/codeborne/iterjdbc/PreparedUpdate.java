@@ -1,4 +1,4 @@
-package com.codeborne.iterjdbc.jdbc;
+package com.codeborne.iterjdbc;
 
 import com.codeborne.iterjdbc.named.NamedSql;
 
@@ -18,7 +18,7 @@ public class PreparedUpdate implements AutoCloseable {
     this.namedSql = namedSql;
   }
 
-  public int execute(Map<String, Object> params) {
+  public int run(Map<String, Object> params) {
     try {
       PreparedQueriesUtils.setParams(stmt, namedSql.toPositionalParams(params));
       return stmt.executeUpdate();
@@ -27,7 +27,13 @@ public class PreparedUpdate implements AutoCloseable {
     }
   }
 
-  public int executeBatch(Iterator<Map<String, Object>> paramsIterator) {
+  public int runOnce(Map<String, Object> params) {
+    try(this) {
+      return run(params);
+    }
+  }
+
+  public int runBatch(Iterator<Map<String, Object>> paramsIterator) {
     try {
       while (paramsIterator.hasNext()) {
         var params = paramsIterator.next();
@@ -37,6 +43,12 @@ public class PreparedUpdate implements AutoCloseable {
       return Arrays.stream(stmt.executeBatch()).filter(i -> i >= 0).sum();
     } catch (SQLException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  public int runBatchOnce(Iterator<Map<String, Object>> paramsIterator) {
+    try (this) {
+      return runBatch(paramsIterator);
     }
   }
 

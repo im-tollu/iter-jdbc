@@ -21,4 +21,8 @@ public class CloseableListIterator<E> extends WithCloseHandlers implements Close
   public E next() {
     return iterator.next();
   }
+
+  public static CloseableIterator<?> emptyCloseableIterator() {
+    return new CloseableListIterator<>();
+  }
 }
