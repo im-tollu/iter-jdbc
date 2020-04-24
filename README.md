@@ -7,7 +7,7 @@ This project was inspired by Spring-Jdbc. In particular, named parameter SQL
    to provide and accept iterators wherever possible instead of callbacks and
     collections.
     
-## Add to your project
+## Add
 
 Using the following Maven coordinates:
 
@@ -15,80 +15,97 @@ Using the following Maven coordinates:
 <dependency>
   <groupId>com.codeborne</groupId>
   <artifactId>iter-jdbc</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.2-SNAPSHOT</version>
 </dependency>
 ```
     
-## Usage
+## Use
 
-To use this library you need an instance of `java.sql.Connection`.
-
-```
-Connection conn = dataSource.getConnection();
-```
-
-### Queries that return result sets
-
-**Single-usage query** - PreparedStatement is closed after execution.
+Create a repository:
 
 ```
-var query = new Query(
-    "select USERNAME from USERS where ROLE = :userRole",
-    rs -> rs.getString("USERNAME")
-);
-try(var teachers = query.connect(conn).runOnce(Map.of("userRole", "teacher"))) {
-    teachers.forEachRemaining(System.out::println);
+public class BooksRepo {
+  public BooksRepo(DataSource ds) {
+    this.ds = ds;
+  }
+
+  private final DataSource ds;
+
+  private static final Query<Book> allBooksQuery = new Query<>(
+    "select b.TITLE from BOOKS",
+    BooksRepo::mapRowToBook
+  );
+
+  private static Book mapRowToBook(ResultSet rs) throws SQLException {
+    return new Book(rs.getString("TITLE"));
+  }
+
+  public CloseableIterator<Book> allBooks() {
+    try (Connection conn = ds.getConnection()) {
+      return allBooksQuery.connect(conn)
+        .runOnce(emptyMap());
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }
 ```
 
-**Single-usage single-result query** - PreparedStatement and results are
- closed after execution.
+Create a service:
 
 ```
-var query = new Query(
-    "select count(1) from USERS where ROLE = :userRole",
-    rs -> rs.getString("USERNAME")
-);
-var teachersCount = query.connect(conn).runOnceForSingleResult(Map.of("userRole", "teacher"));
+public class BooksReportService {
+  public BooksReportService(BooksRepo repo) {
+    this.repo = repo;
+  }
 
-System.out.println("Total teachers in the college: " + teachersCount);
-```
- 
-**Reusable query** - PreparedStatement is left open after execution.
- 
-```
-try(
-   var preparedQuery = new Query(
-       "select USERNAME from USERS where ROLE = :userRole",
-       rs -> rs.getString("USERNAME")
-   ).connect(conn)
-) {
-   System.out.println("Teachers:");
-   try(var teachers = preparedQuery.run(Map.of("userRole", "teacher"))) {
-       teachers.forEachRemaining(System.out::println);
-   }
-   
-   System.out.println("\nStudents:");
-   try(var students = preparedQuery.run(Map.of("userRole", "students"))) {
-       students.forEachRemaining(System.out::println);
-   }
+  private final BooksRepo repo;
+
+  public void writeReport(Writer w) {
+    try (CloseableIterator<Book> books = repo.allBooks()) {
+      int bookNum = 0;
+      while (books.hasNext()) {
+        bookNum++;
+        Book book = books.next();
+        w.write(bookNum + ".\t" + book.getTitle() + "\n");
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }
 ```
 
-**Reusable single-result query** - PreparedStatement is left open and
- result set is closed after execution.
- 
+## Test
+
+Test repositories with integration tests and a real database.
+
+Test service classes using `CloseableListIterator`. Test that code under test
+closes resources (prepared queries and iterators):
+
 ```
-try(
-   var preparedQuery = new Query(
-       "select count(1) from USERS where ROLE = :userRole",
-       rs -> rs.getString("USERNAME")
-   ).connect(conn)
-) {
-   var teachersCount = preparedQuery.runForSingleResult(Map.of("userRole", "teacher"));
-   System.out.println("Total teachers in the college: " + teachersCount);
-   
-   var studentsCount = preparedQuery.runForSingleResult(Map.of("userRole", "student"));
-   System.out.println("Total students in the college: " + studentsCount);
+class BooksReportServiceTest {
+  BooksRepo repo = mock(BooksRepo.class);
+  BooksReportService reportService = new BooksReportService(repo);
+
+  @Test
+  void writeReport() {
+    CloseableListIterator<Book> books = spy(new CloseableListIterator<>(
+      new Book("A book"),
+      new Book("Another book"),
+      new Book("One more book")
+    ));
+    when(repo.allBooks()).thenReturn(books);
+    StringWriter w = new StringWriter();
+
+    reportService.writeReport(w);
+
+    assertThat(w.toString()).isEqualTo(
+      "1.\tA book\n" +
+      "2.\tAnother book\n" +
+      "3.\tOne more book\n"
+    );
+    verify(books).close();
+  }
 }
 ```
