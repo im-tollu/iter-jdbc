@@ -15,7 +15,7 @@ Using the following Maven coordinates:
 <dependency>
   <groupId>com.codeborne</groupId>
   <artifactId>iter-jdbc</artifactId>
-  <version>0.2-SNAPSHOT</version>
+  <version>0.2</version>
 </dependency>
 ```
     
