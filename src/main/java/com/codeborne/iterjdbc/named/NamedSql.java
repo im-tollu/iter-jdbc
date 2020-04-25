@@ -7,6 +7,15 @@ import java.util.function.Function;
 
 import static java.lang.String.format;
 
+/**
+ * This class handles SQL with named parameters.
+ *
+ * Use static factory {@link #parse(String)} to get an instance of this class.
+ *
+ * It takes SQL with named parameters like this: `select * from BOOKS where ID = :bookId`. It then
+ * parses it and holds both SQL with positional parameters and a mapping to convert parameters map
+ * to an array: `select * from BOOKS where ID = ?`.
+ */
 public class NamedSql {
   private final String sqlNamed;
   private final String sqlPositional;
@@ -18,10 +27,17 @@ public class NamedSql {
     this.paramNames = paramNames;
   }
 
+  /**
+   * @return - SQL query with positional placeholders (`?`) as required by standard JDBC syntax.
+   */
   public String getSqlPositional() {
     return sqlPositional;
   }
 
+  /**
+   * @param params - mapping of the named parameters to their values.
+   * @return - values of positional parameters in the correct order.
+   */
   public Object[] toPositionalParams(Map<String, Object> params) {
     return paramNames.stream().map(extractParam(params)).toArray();
   }
@@ -37,6 +53,12 @@ public class NamedSql {
     };
   }
 
+  /**
+   * Factory for this class that handles parsing of an SQL query.
+   * @param sql - SQL query with named parameters like `select * from BOOKS where ID = :bookId`
+   * @return - parsed SQL query that can be used as an input to {@link com.codeborne.iterjdbc.Query}
+   * and {@link com.codeborne.iterjdbc.Update}
+   */
   public static NamedSql parse(String sql) {
     return SqlParser.parse(sql);
   }
