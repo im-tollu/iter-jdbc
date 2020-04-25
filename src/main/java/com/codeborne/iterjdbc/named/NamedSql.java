@@ -12,7 +12,7 @@ public class NamedSql {
   private final String sqlPositional;
   private final List<String> paramNames;
 
-  public NamedSql(String sqlNamed, String sqlPositional, List<String> paramNames) {
+  NamedSql(String sqlNamed, String sqlPositional, List<String> paramNames) {
     this.sqlNamed = sqlNamed;
     this.sqlPositional = sqlPositional;
     this.paramNames = paramNames;
