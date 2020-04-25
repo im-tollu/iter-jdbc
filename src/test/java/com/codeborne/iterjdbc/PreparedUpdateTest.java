@@ -5,26 +5,24 @@ import org.junit.jupiter.api.Test;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Stream;
 
 import static java.sql.Statement.EXECUTE_FAILED;
 import static java.sql.Statement.SUCCESS_NO_INFO;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 class PreparedUpdateTest {
   PreparedStatement statement = mock(PreparedStatement.class);
   NamedSql namedSql = NamedSql.parse("insert into A (B, C) values (:b, :c)");
-  Map<String, Object> params = Stream.of(
-    new SimpleImmutableEntry<>("b", 123L),
-    new SimpleImmutableEntry<>("c", "value of c"))
-    .collect(toMap(Entry::getKey, Entry::getValue));
+  Map<String, Object> params = new HashMap<>();
+  {
+    params.put("c", "value of c");
+    params.put("b", 123L);
+  }
 
   PreparedUpdate preparedUpdate = new PreparedUpdate(statement, namedSql);
 

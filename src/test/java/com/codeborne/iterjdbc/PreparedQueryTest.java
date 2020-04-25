@@ -6,11 +6,9 @@ import org.junit.jupiter.api.Test;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -24,10 +22,9 @@ class PreparedQueryTest {
   void run() throws SQLException {
     ResultSet rs = mock(ResultSet.class);
     when(statement.executeQuery()).thenReturn(rs);
-    Map<String, Object> params = Stream.of(
-      new AbstractMap.SimpleImmutableEntry<>("c", 123L),
-      new AbstractMap.SimpleImmutableEntry<>("d", "value of d"))
-      .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+    Map<String, Object> params = new HashMap<>();
+    params.put("c", 123L);
+    params.put("d", "value of d");
 
     CloseableIterator<String> results = preparedQuery.run(params);
     results.close();
@@ -42,10 +39,9 @@ class PreparedQueryTest {
   void runOnce() throws SQLException {
     ResultSet rs = mock(ResultSet.class);
     when(statement.executeQuery()).thenReturn(rs);
-    Map<String, Object> params = Stream.of(
-      new AbstractMap.SimpleImmutableEntry<>("c", 123L),
-      new AbstractMap.SimpleImmutableEntry<>("d", "value of d"))
-      .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+    Map<String, Object> params = new HashMap<>();
+    params.put("c", 123L);
+    params.put("d", "value of d");
 
     CloseableIterator<String> results = preparedQuery.runOnce(params);
     results.close();
@@ -61,10 +57,9 @@ class PreparedQueryTest {
     ResultSet rs = mock(ResultSet.class);
     when(rs.next()).thenReturn(true, true, false);
     when(statement.executeQuery()).thenReturn(rs);
-    Map<String, Object> params = Stream.of(
-      new AbstractMap.SimpleImmutableEntry<>("c", 123L),
-      new AbstractMap.SimpleImmutableEntry<>("d", "value of d"))
-      .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+    Map<String, Object> params = new HashMap<>();
+    params.put("c", 123L);
+    params.put("d", "value of d");
 
     String result = preparedQuery.runForSingleResult(params);
 
@@ -79,10 +74,9 @@ class PreparedQueryTest {
     ResultSet rs = mock(ResultSet.class);
     when(rs.next()).thenReturn(true, true, false);
     when(statement.executeQuery()).thenReturn(rs);
-    Map<String, Object> params = Stream.of(
-      new AbstractMap.SimpleImmutableEntry<>("c", 123L),
-      new AbstractMap.SimpleImmutableEntry<>("d", "value of d"))
-      .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+    Map<String, Object> params = new HashMap<>();
+    params.put("c", 123L);
+    params.put("d", "value of d");
 
     String result = preparedQuery.runOnceForSingleResult(params);
 
