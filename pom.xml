@@ -4,7 +4,7 @@
 
   <groupId>com.codeborne</groupId>
   <artifactId>iter-jdbc</artifactId>
-  <version>0.2</version>
+  <version>0.3-SNAPSHOT</version>
   <name>iter-jdbc</name>
   <description>iter-jdbc - iterator-focused JDBC wrapper library</description>
   <url>https://github.com/im-tollu/iter-jdbc</url>
@@ -149,7 +149,7 @@
     <connection>scm:git:git://github.com/im-tollu/iter-jdbc.git</connection>
     <developerConnection>scm:git:git@github.com:im-tollu/iter-jdbc.git</developerConnection>
     <url>https://github.com/im-tollu/iter-jdbc</url>
-    <tag>iter-jdbc-0.2</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <profiles>
