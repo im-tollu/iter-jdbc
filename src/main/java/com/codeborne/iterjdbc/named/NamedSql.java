@@ -38,7 +38,7 @@ public class NamedSql {
   }
 
   public static NamedSql parse(String sql) {
-    return ParseUtils.parse(sql);
+    return SqlParser.parse(sql);
   }
 
   @Override

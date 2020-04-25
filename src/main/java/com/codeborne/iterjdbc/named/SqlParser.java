@@ -3,7 +3,7 @@ package com.codeborne.iterjdbc.named;
 import java.util.ArrayList;
 import java.util.function.Predicate;
 
-class ParseUtils {
+class SqlParser {
   static final char PARAM_TOKEN = ':';
   static final String INLINE_COMMENT_TOKEN = "--";
   static final char STRING_LITERAL_TOKEN = '\'';
