@@ -40,13 +40,21 @@ public class Update {
    * @param conn - JDBC connection
    * @return prepared update that is bound the the connection
    */
-  public PreparedUpdate connect(Connection conn) {
+  public ReusableUpdate forReuse(Connection conn) {
     try {
       PreparedStatement stmt = conn.prepareStatement(namedSql.getSqlPositional());
-      return new PreparedUpdate(stmt, namedSql);
+      return new ReusableUpdate(stmt, namedSql);
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * @param conn - JDBC connection
+   * @return prepared update that is bound the the connection
+   */
+  public SingleUseUpdate forSingleUse(Connection conn) {
+      return new SingleUseUpdate(this.forReuse(conn));
   }
 
   @Override

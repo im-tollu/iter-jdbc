@@ -13,16 +13,28 @@ import static org.mockito.Mockito.*;
 
 class UpdateTest {
   @Test
-  void connect() throws SQLException {
+  void forReuse() throws SQLException {
     Connection conn = mock(Connection.class);
     PreparedStatement stmt = mock(PreparedStatement.class);
     when(conn.prepareStatement(any())).thenReturn(stmt);
     NamedSql namedSql = NamedSql.parse("some sql query");
 
-    PreparedUpdate preparedUpdate = new Update(namedSql).connect(conn);
+    ReusableUpdate reusableUpdate = new Update(namedSql).forReuse(conn);
 
     verify(conn).prepareStatement(namedSql.getSqlPositional());
-    assertThat(preparedUpdate).isEqualTo(new PreparedUpdate(stmt, namedSql));
+    assertThat(reusableUpdate).isEqualTo(new ReusableUpdate(stmt, namedSql));
+  }
+
+  @Test
+  void forSingleUse() throws SQLException {
+    Connection conn = mock(Connection.class);
+    PreparedStatement stmt = mock(PreparedStatement.class);
+    when(conn.prepareStatement(any())).thenReturn(stmt);
+    NamedSql namedSql = NamedSql.parse("some sql query");
+
+    SingleUseUpdate singleUseUpdate = new Update(namedSql).forSingleUse(conn);
+
+    assertThat(singleUseUpdate).isEqualTo(new SingleUseUpdate(new ReusableUpdate(stmt, namedSql)));
   }
 
   @Test

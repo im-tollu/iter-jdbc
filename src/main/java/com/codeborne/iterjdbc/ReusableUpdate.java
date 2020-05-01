@@ -8,6 +8,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.codeborne.iterjdbc.PreparedQueriesUtils.setParams;
 
 public class ReusableUpdate implements AutoCloseable {
   private final PreparedStatement stmt;
@@ -20,21 +23,32 @@ public class ReusableUpdate implements AutoCloseable {
 
   public int run(Map<String, Object> params) {
     try {
-      PreparedQueriesUtils.setParams(stmt, namedSql.toPositionalParams(params));
+      setParams(stmt, namedSql.toPositionalParams(params));
       return stmt.executeUpdate();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public int runBatch(Iterator<Map<String, Object>> paramsIterator) {
+  public int runBatch(Iterator<Map<String, Object>> paramsIterator, int batchSize) {
+    AtomicInteger affectedRows = new AtomicInteger(0);
+    int remainingInBatch = batchSize;
     try {
-      while (paramsIterator.hasNext()) {
+      while (true) {
+        if (remainingInBatch == 0 || !paramsIterator.hasNext()) {
+          Arrays.stream(stmt.executeBatch())
+            .filter(result -> result > 0)
+            .forEach(affectedRows::addAndGet);
+          remainingInBatch = batchSize;
+        }
+        if (!paramsIterator.hasNext()) {
+          return affectedRows.get();
+        }
         Map<String, Object> params = paramsIterator.next();
-        PreparedQueriesUtils.setParams(stmt, namedSql.toPositionalParams(params));
+        setParams(stmt, namedSql.toPositionalParams(params));
         stmt.addBatch();
+        remainingInBatch--;
       }
-      return Arrays.stream(stmt.executeBatch()).filter(i -> i >= 0).sum();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }

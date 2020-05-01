@@ -33,11 +33,12 @@ class SingleUseUpdateTest {
     Map<String, Object> params = singletonMap("param", "value");
     Iterator<Map<String, Object>> paramsIterator = singletonList(params).iterator();
     int expectedAffectedRows = 567;
-    when(reusableUpdate.runBatch(any())).thenReturn(expectedAffectedRows);
+    int batchSize = 4567;
+    when(reusableUpdate.runBatch(any(), anyInt())).thenReturn(expectedAffectedRows);
 
-    int actualAffectedRows = singleUseUpdate.runBatch(paramsIterator);
+    int actualAffectedRows = singleUseUpdate.runBatch(paramsIterator, batchSize);
 
-    verify(reusableUpdate).runBatch(same(paramsIterator));
+    verify(reusableUpdate).runBatch(same(paramsIterator), eq(batchSize));
     verify(reusableUpdate).close();
     assertThat(actualAffectedRows).isEqualTo(expectedAffectedRows);
   }

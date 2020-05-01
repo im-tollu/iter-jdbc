@@ -24,13 +24,13 @@ class ReusableUpdateTest {
     params.put("b", 123L);
   }
 
-  PreparedUpdate preparedUpdate = new PreparedUpdate(statement, namedSql);
+  ReusableUpdate reusableUpdate = new ReusableUpdate(statement, namedSql);
 
   @Test
   void run() throws SQLException {
     when(statement.executeUpdate()).thenReturn(12);
 
-    int affectedRows = preparedUpdate.run(params);
+    int affectedRows = reusableUpdate.run(params);
 
     verify(statement).setObject(1, 123L);
     verify(statement).setObject(2, "value of c");
@@ -40,21 +40,24 @@ class ReusableUpdateTest {
 
   @Test
   void runBatch() throws SQLException {
-    when(statement.executeBatch()).thenReturn(new int[]{5, 7, SUCCESS_NO_INFO, EXECUTE_FAILED});
-    Iterator<Map<String, Object>> paramsIterator = asList(params, params).iterator();
+    when(statement.executeBatch())
+      .thenReturn(new int[]{5, 7, SUCCESS_NO_INFO, EXECUTE_FAILED})
+      .thenReturn(new int[]{4});
+    Iterator<Map<String, Object>> paramsIterator = asList(params, params, params).iterator();
+    int batchSize = 2;
 
-    int affectedRows = preparedUpdate.runBatch(paramsIterator);
+    int affectedRows = reusableUpdate.runBatch(paramsIterator, batchSize);
 
-    verify(statement, times(2)).setObject(1, 123L);
-    verify(statement, times(2)).setObject(2, "value of c");
-    verify(statement).executeBatch();
+    verify(statement, times(3)).setObject(1, 123L);
+    verify(statement, times(3)).setObject(2, "value of c");
+    verify(statement, times(2)).executeBatch();
     verify(statement, never()).close();
-    assertThat(affectedRows).isEqualTo(12);
+    assertThat(affectedRows).isEqualTo(16);
   }
 
   @Test
   void close() throws SQLException {
-    preparedUpdate.close();
+    reusableUpdate.close();
 
     verify(statement).close();
   }

@@ -25,7 +25,7 @@
  *   in an efficient way. But with it comes the responsibility to close all resources that you use.
  *   Don't forget to unit-test that you close {@link com.codeborne.iterjdbc.CloseableIterator}
  *   as well as {@link com.codeborne.iterjdbc.ReusableQuery} and
- *   {@link com.codeborne.iterjdbc.PreparedUpdate}.
+ *   {@link com.codeborne.iterjdbc.ReusableUpdate}.
  * </p>
  */
 package com.codeborne.iterjdbc;
