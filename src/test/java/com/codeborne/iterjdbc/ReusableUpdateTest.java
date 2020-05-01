@@ -15,7 +15,7 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-class PreparedUpdateTest {
+class ReusableUpdateTest {
   PreparedStatement statement = mock(PreparedStatement.class);
   NamedSql namedSql = NamedSql.parse("insert into A (B, C) values (:b, :c)");
   Map<String, Object> params = new HashMap<>();
@@ -39,18 +39,6 @@ class PreparedUpdateTest {
   }
 
   @Test
-  void runOnce() throws SQLException {
-    when(statement.executeUpdate()).thenReturn(12);
-
-    int affectedRows = preparedUpdate.runOnce(params);
-
-    verify(statement).setObject(1, 123L);
-    verify(statement).setObject(2, "value of c");
-    verify(statement).close();
-    assertThat(affectedRows).isEqualTo(12);
-  }
-
-  @Test
   void runBatch() throws SQLException {
     when(statement.executeBatch()).thenReturn(new int[]{5, 7, SUCCESS_NO_INFO, EXECUTE_FAILED});
     Iterator<Map<String, Object>> paramsIterator = asList(params, params).iterator();
@@ -61,20 +49,6 @@ class PreparedUpdateTest {
     verify(statement, times(2)).setObject(2, "value of c");
     verify(statement).executeBatch();
     verify(statement, never()).close();
-    assertThat(affectedRows).isEqualTo(12);
-  }
-
-  @Test
-  void runBatchOnce() throws SQLException {
-    when(statement.executeBatch()).thenReturn(new int[]{5, 7, SUCCESS_NO_INFO, EXECUTE_FAILED});
-    Iterator<Map<String, Object>> paramsIterator = asList(params, params).iterator();
-
-    int affectedRows = preparedUpdate.runBatchOnce(paramsIterator);
-
-    verify(statement, times(2)).setObject(1, 123L);
-    verify(statement, times(2)).setObject(2, "value of c");
-    verify(statement).executeBatch();
-    verify(statement).close();
     assertThat(affectedRows).isEqualTo(12);
   }
 
