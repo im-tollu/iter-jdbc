@@ -13,7 +13,7 @@ import static org.mockito.Mockito.*;
 
 class QueryTest {
   @Test
-  void connect() throws SQLException {
+  void forReuse() throws SQLException {
     NamedSql namedSql = NamedSql.parse("some sql query");
     RowMapper<String> rowMapper = rs -> "any";
     Connection conn = mock(Connection.class);
@@ -21,10 +21,10 @@ class QueryTest {
     when(conn.prepareStatement(any())).thenReturn(stmt);
     Query<String> query = new Query<>(namedSql, rowMapper);
 
-    PreparedQuery<String> preparedQuery = query.connect(conn);
+    ReusableQuery<String> reusableQuery = query.forReuse(conn);
 
     verify(conn).prepareStatement(namedSql.getSqlPositional());
-    assertThat(preparedQuery).isEqualTo(new PreparedQuery<>(stmt, namedSql, rowMapper));
+    assertThat(reusableQuery).isEqualTo(new ReusableQuery<>(stmt, namedSql, rowMapper));
   }
 
   @Test

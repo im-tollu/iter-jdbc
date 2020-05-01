@@ -8,12 +8,12 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
 
-public class PreparedQuery<E> implements AutoCloseable {
+public class ReusableQuery<E> implements AutoCloseable {
   private final PreparedStatement stmt;
   private final NamedSql namedSql;
   private final RowMapper<E> rowMapper;
 
-  public PreparedQuery(PreparedStatement stmt, NamedSql namedSql, RowMapper<E> rowMapper) {
+  public ReusableQuery(PreparedStatement stmt, NamedSql namedSql, RowMapper<E> rowMapper) {
     this.stmt = stmt;
     this.namedSql = namedSql;
     this.rowMapper = rowMapper;
@@ -29,21 +29,9 @@ public class PreparedQuery<E> implements AutoCloseable {
     }
   }
 
-  public CloseableIterator<E> runOnce(Map<String, Object> params) {
-    CloseableIterator<E> results = run(params);
-    results.onClose(this::close);
-    return results;
-  }
-
   public E runForSingleResult(Map<String, Object> params) {
     try (CloseableIterator<E> results = run(params)) {
       return results.hasNext() ? results.next() : null;
-    }
-  }
-
-  public E runOnceForSingleResult(Map<String, Object> params) {
-    try (PreparedQuery<E> ignored = this) {
-      return runForSingleResult(params);
     }
   }
 
@@ -56,7 +44,7 @@ public class PreparedQuery<E> implements AutoCloseable {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    PreparedQuery<?> that = (PreparedQuery<?>) o;
+    ReusableQuery<?> that = (ReusableQuery<?>) o;
     return stmt.equals(that.stmt) &&
       namedSql.equals(that.namedSql) &&
       rowMapper.equals(that.rowMapper);

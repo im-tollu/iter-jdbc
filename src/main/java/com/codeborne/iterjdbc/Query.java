@@ -46,13 +46,21 @@ public class Query<E> {
    * @param conn - JDBC connection
    * @return prepared query that is bound the the connection
    */
-  public PreparedQuery<E> connect(Connection conn) {
+  public ReusableQuery<E> forReuse(Connection conn) {
     try {
       PreparedStatement stmt = conn.prepareStatement(namedSql.getSqlPositional());
-      return new PreparedQuery<>(stmt, namedSql, rowMapper);
+      return new ReusableQuery<>(stmt, namedSql, rowMapper);
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * @param conn - JDBC connection
+   * @return prepared query that is bound the the connection
+   */
+  public SingleUseQuery<E> forSingleUse(Connection conn) {
+    return new SingleUseQuery<>(this.forReuse(conn));
   }
 
   @Override
