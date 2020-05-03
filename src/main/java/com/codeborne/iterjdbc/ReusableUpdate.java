@@ -4,10 +4,7 @@ import com.codeborne.iterjdbc.named.NamedSql;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.codeborne.iterjdbc.PreparedQueriesUtils.setParams;
@@ -52,6 +49,10 @@ public class ReusableUpdate implements AutoCloseable {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public int runBatch(List<Map<String, Object>> paramsList) {
+    return runBatch(paramsList.iterator(), paramsList.size());
   }
 
   @Override

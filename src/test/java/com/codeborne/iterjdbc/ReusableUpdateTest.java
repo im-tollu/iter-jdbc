@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import static java.sql.Statement.EXECUTE_FAILED;
@@ -39,7 +40,7 @@ class ReusableUpdateTest {
   }
 
   @Test
-  void runBatch() throws SQLException {
+  void runBatch_withIterator() throws SQLException {
     when(statement.executeBatch())
       .thenReturn(new int[]{5, 7, SUCCESS_NO_INFO, EXECUTE_FAILED})
       .thenReturn(new int[]{4});
@@ -53,6 +54,21 @@ class ReusableUpdateTest {
     verify(statement, times(2)).executeBatch();
     verify(statement, never()).close();
     assertThat(affectedRows).isEqualTo(16);
+  }
+
+  @Test
+  void runBatch_withList() throws SQLException {
+    when(statement.executeBatch())
+      .thenReturn(new int[]{5, 7, SUCCESS_NO_INFO, EXECUTE_FAILED});
+    List<Map<String, Object>> paramsList = asList(params, params, params);
+
+    int affectedRows = reusableUpdate.runBatch(paramsList);
+
+    verify(statement, times(3)).setObject(1, 123L);
+    verify(statement, times(3)).setObject(2, "value of c");
+    verify(statement, times(1)).executeBatch();
+    verify(statement, never()).close();
+    assertThat(affectedRows).isEqualTo(12);
   }
 
   @Test
