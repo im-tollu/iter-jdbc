@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 
+import static java.util.Collections.emptyMap;
+
 public class SingleUseUpdate {
   private final ReusableUpdate reusableUpdate;
 
@@ -15,6 +17,10 @@ public class SingleUseUpdate {
     int affectedRows = reusableUpdate.run(params);
     reusableUpdate.close();
     return affectedRows;
+  }
+
+  public int run() {
+    return run(emptyMap());
   }
 
   public int runBatch(Iterator<Map<String, Object>> paramsIterator, int batchSize) {

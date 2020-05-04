@@ -6,8 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
+import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -16,7 +15,7 @@ class SingleUseUpdateTest {
   SingleUseUpdate singleUseUpdate = new SingleUseUpdate(reusableUpdate);
 
   @Test
-  void run() {
+  void run_withParameters() {
     Map<String, Object> params = new HashMap<>();
     int expectedAffectedRows = 234;
     when(reusableUpdate.run(any())).thenReturn(expectedAffectedRows);
@@ -26,6 +25,17 @@ class SingleUseUpdateTest {
     verify(reusableUpdate).run(same(params));
     verify(reusableUpdate).close();
     assertThat(actualAffectedRows).isEqualTo(expectedAffectedRows);
+  }
+
+  @Test
+  void run_withoutParams() {
+    when(reusableUpdate.run(any())).thenReturn(12);
+
+    int affectedRows = singleUseUpdate.run();
+
+    verify(reusableUpdate).run(emptyMap());
+    verify(reusableUpdate).close();
+    assertThat(affectedRows).isEqualTo(12);
   }
 
   @Test
