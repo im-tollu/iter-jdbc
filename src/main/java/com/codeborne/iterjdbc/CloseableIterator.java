@@ -16,6 +16,6 @@ public interface CloseableIterator<E> extends Iterator<E>, AutoCloseable {
 
   default Stream<E> stream() {
     Spliterator<E> spliterator = Spliterators.spliteratorUnknownSize(this, 0);
-    return StreamSupport.stream(spliterator, false).onClose(this::close);
+    return StreamSupport.stream(spliterator, false);
   }
 }

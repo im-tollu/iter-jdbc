@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,31 +29,33 @@ class RsIteratorTest {
     when(rs.next()).thenReturn(true, true, true, false);
     when(rs.getString(any())).thenReturn("A", "B", "C");
 
-    RsIterator<String> rsIterator = new RsIterator<>(rs, rs -> rs.getString("COLUMN_NAME"));
+    RsIterator<String> rsIterator = new RsIterator<>(rs, this::rowMapper);
 
     assertThat(rsIterator).toIterable().containsExactly("A", "B", "C");
   }
 
   @Test
   void close_closesResultSet() throws SQLException {
-    RsIterator<Integer> rsIterator = new RsIterator<>(rs, rs -> 0);
+    RsIterator<String> rsIterator = new RsIterator<>(rs, this::rowMapper);
 
     rsIterator.close();
 
     verify(rs).close();
   }
 
-  @Test @SuppressWarnings("ConstantConditions")
+  @Test
   void stream() throws SQLException {
     when(rs.next()).thenReturn(true, true, true, false);
     when(rs.getString(any())).thenReturn("A", "B", "C");
-    RsIterator<String> rsIterator = new RsIterator<>(rs, rs -> rs.getString("COLUMN_NAME"));
-    AtomicBoolean isStreamClosed = new AtomicBoolean(false);
-    rsIterator.onClose(() -> isStreamClosed.set(true));
+    RsIterator<String> rsIterator = spy(new RsIterator<>(rs, this::rowMapper));
 
     Stream<String> stream = rsIterator.stream();
 
     assertThat(stream).containsExactly("A", "B", "C");
-    assertThat(isStreamClosed).isTrue();
+    verify(rsIterator, never()).close();
+  }
+
+  private String rowMapper(ResultSet rs) throws SQLException {
+    return rs.getString("COLUMN_NAME");
   }
 }
