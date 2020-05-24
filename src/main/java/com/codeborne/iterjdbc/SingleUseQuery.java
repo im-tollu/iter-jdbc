@@ -2,7 +2,7 @@ package com.codeborne.iterjdbc;
 
 import java.util.Map;
 
-public class SingleUseQuery<E> {
+public class SingleUseQuery<E> extends WithCloseHandlers {
   private final ReusableQuery<E> reusableQuery;
 
   public SingleUseQuery(ReusableQuery<E> reusableQuery) {

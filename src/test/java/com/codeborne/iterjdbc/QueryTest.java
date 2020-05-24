@@ -24,7 +24,7 @@ class QueryTest {
     ReusableQuery<String> reusableQuery = query.forReuse(conn);
 
     verify(conn).prepareStatement(namedSql.getSqlPositional());
-    assertThat(reusableQuery).isEqualTo(new ReusableQuery<>(stmt, namedSql, rowMapper));
+    assertThat(reusableQuery).isEqualTo(new ReusableQuery<>(conn, namedSql, rowMapper));
   }
 
   @Test

@@ -2,24 +2,27 @@ package com.codeborne.iterjdbc;
 
 import com.codeborne.iterjdbc.named.NamedSql;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
 
-public class ReusableQuery<E> implements AutoCloseable {
-  private final PreparedStatement stmt;
+public class ReusableQuery<E> extends WithCloseHandlers {
+  private final Connection conn;
   private final NamedSql namedSql;
   private final RowMapper<E> rowMapper;
+  private PreparedStatement stmt;
 
-  public ReusableQuery(PreparedStatement stmt, NamedSql namedSql, RowMapper<E> rowMapper) {
-    this.stmt = stmt;
+  public ReusableQuery(Connection conn, NamedSql namedSql, RowMapper<E> rowMapper) {
+    this.conn = conn;
     this.namedSql = namedSql;
     this.rowMapper = rowMapper;
   }
 
   public CloseableIterator<E> run(Map<String, Object> params) {
+    prepareStatementIfNotYet();
     try {
       PreparedQueriesUtils.setParams(this.stmt, this.namedSql.toPositionalParams(params));
       ResultSet rs = this.stmt.executeQuery();
@@ -30,8 +33,19 @@ public class ReusableQuery<E> implements AutoCloseable {
   }
 
   public E runForSingleResult(Map<String, Object> params) {
+    prepareStatementIfNotYet();
     try (CloseableIterator<E> results = run(params)) {
       return results.hasNext() ? results.next() : null;
+    }
+  }
+
+  private void prepareStatementIfNotYet() {
+    try {
+      if (this.stmt == null) {
+        stmt = conn.prepareStatement(namedSql.getSqlPositional());
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -45,20 +59,20 @@ public class ReusableQuery<E> implements AutoCloseable {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ReusableQuery<?> that = (ReusableQuery<?>) o;
-    return stmt.equals(that.stmt) &&
+    return conn.equals(that.conn) &&
       namedSql.equals(that.namedSql) &&
       rowMapper.equals(that.rowMapper);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(stmt, namedSql, rowMapper);
+    return Objects.hash(conn, namedSql, rowMapper);
   }
 
   @Override
   public String toString() {
     return "PreparedQuery{" +
-      "stmt=" + stmt +
+      "conn=" + conn +
       ", namedSql=" + namedSql +
       ", rowMapper=" + rowMapper +
       '}';

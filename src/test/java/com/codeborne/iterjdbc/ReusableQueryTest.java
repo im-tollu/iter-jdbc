@@ -3,6 +3,7 @@ package com.codeborne.iterjdbc;
 import com.codeborne.iterjdbc.named.NamedSql;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,11 +14,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 class ReusableQueryTest {
+  Connection conn = mock(Connection.class);
   PreparedStatement stmt = mock(PreparedStatement.class);
   NamedSql namedSql = NamedSql.parse("select A from B where C = :c and D = :d");
   RowMapper<String> rowMapper = rs -> "any";
 
-  ReusableQuery<String> reusableQuery = new ReusableQuery<>(stmt, namedSql, rowMapper);
+  ReusableQuery<String> reusableQuery = new ReusableQuery<>(conn, namedSql, rowMapper);
 
   @Test
   void run() throws SQLException {

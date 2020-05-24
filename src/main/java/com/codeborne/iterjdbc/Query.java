@@ -3,8 +3,6 @@ package com.codeborne.iterjdbc;
 import com.codeborne.iterjdbc.named.NamedSql;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.Objects;
 
 /**
@@ -47,12 +45,7 @@ public class Query<E> {
    * @return prepared query that is bound the the connection
    */
   public ReusableQuery<E> forReuse(Connection conn) {
-    try {
-      PreparedStatement stmt = conn.prepareStatement(namedSql.getSqlPositional());
-      return new ReusableQuery<>(stmt, namedSql, rowMapper);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    return new ReusableQuery<>(conn, namedSql, rowMapper);
   }
 
   /**
